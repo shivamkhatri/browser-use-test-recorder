@@ -1,0 +1,14 @@
+﻿[project]
+name = "browser-use-recorder"
+description = "Web-based interaction recorder for browser automation built on browser-use"
+authors = [{ name = "Browser-Use Team" }]
+version = "0.1.0"
+readme = "README.md"
+requires-python = ">=3.11,<4.0"
+dependencies = [
+    "browser-use>=0.7.7",
+    "fastapi>=0.116.1",
+    "uvicorn>=0.35.0",
+    "jinja2>=3.1.6",
+    "python-dotenv>=1.0.1",
+]

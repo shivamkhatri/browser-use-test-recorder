@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Browser-Use Recorder</title>
+    <style>
+        /* Reset and Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f5f5f5;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        /* Main Layout */
+        .app-container {
+            display: flex;
+            height: 100vh;
+            max-width: 100vw;
+            overflow: hidden;
+        }
+        
+        /* Left Panel */
+        .left-panel {
+            width: 400px;
+            background: white;
+            border-right: 1px solid #e0e0e0;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Header */
+        .header {
+            padding: 16px;
+            background: white;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 12px;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: white;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        
+        .btn:hover {
+            background: #f8f9fa;
+        }
+        
+        .btn.primary {
+            background: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+        
+        .btn.primary:hover {
+            background: #0056b3;
+        }
+        
+        .btn:disabled {
+            background: #f8f9fa;
+            color: #6c757d;
+            cursor: not-allowed;
+        }
+        
+        /* Status */
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            font-size: 12px;
+            color: #666;
+            margin-top: 12px;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #ccc; /* Default to grey */
+        }
+        
+        .status-dot.connected {
+            background: #28a745;
+        }
+        
+        .status-dot.disconnected {
+            background: #dc3545;
+        }
+        
+        .status-dot.recording {
+            background: #ff6b35;
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        /* Tabs */
+        .tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .tab-button {
+            flex: 1;
+            padding: 12px 16px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            color: #666;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+        
+        .tab-button.active {
+            color: #007bff;
+            border-bottom-color: #007bff;
+            background: white;
+        }
+        
+        .tab-button:hover {
+            background: #f0f0f0;
+        }
+        
+        /* Tab Content */
+        .tab-content {
+            display: none;
+            flex: 1;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .tab-content.active {
+            display: flex;
+        }
+        
+        /* Empty State */
+        .empty-state {
+            padding: 32px 16px;
+            text-align: center;
+            color: #666;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+        }
+        
+        .empty-state h3 {
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .steps-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+        }
+    .steps-toolbar { display:flex; align-items:center; gap:16px; padding:8px 16px 0 16px; font-size:12px; }
+    .steps-toolbar button { padding:4px 10px; font-size:12px; }
+        
+        .step-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 12px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .step-item:hover {
+            border-color: #007bff;
+            background: #f8f9ff;
+        }
+        
+        .step-item.selected {
+            border-color: #007bff;
+            background: #e3f2fd;
+        }
+        
+        .step-thumbnail {
+            width: 60px;
+            height: 40px;
+            border-radius: 4px;
+            background: #f0f0f0;
+            flex-shrink: 0;
+            overflow: hidden;
+        }
+        
+        .step-thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .step-content {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .step-title {
+            font-weight: 500;
+            font-size: 14px;
+            margin-bottom: 4px;
+            color: #333;
+        }
+        
+        .step-details {
+            font-size: 12px;
+            color: #666;
+            line-height: 1.4;
+        }
+        
+        .step-timestamp {
+            font-size: 11px;
+            color: #999;
+            margin-top: 4px;
+        }
+        
+        .step-checkbox {
+            margin-top: 4px;
+        }
+        
+        /* Chat Container */
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            background: #f8f9fa;
+        }
+        
+        .chat-message {
+            margin-bottom: 12px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .chat-message.user {
+            align-items: flex-end;
+        }
+        
+        .chat-message.assistant {
+            align-items: flex-start;
+        }
+        
+        .message-bubble {
+            max-width: 80%;
+            padding: 8px 12px;
+            border-radius: 12px;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+        
+        .chat-message.user .message-bubble {
+            background: #007bff;
+            color: white;
+        }
+        
+        .chat-message.assistant .message-bubble {
+            background: white;
+            color: #333;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .message-timestamp {
+            font-size: 11px;
+            color: #999;
+            margin-top: 4px;
+        }
+        
+        .chat-input-container {
+            padding: 16px;
+            border-top: 1px solid #e0e0e0;
+            background: white;
+        }
+        
+        .chat-input-group {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .chat-input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            font-size: 14px;
+            outline: none;
+        }
+        
+        .chat-input:focus {
+            border-color: #007bff;
+        }
+        
+        .chat-send-btn {
+            padding: 8px 16px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .chat-send-btn:hover {
+            background: #0056b3;
+        }
+        
+        /* Right Panel - Browser Viewport */
+        .right-panel {
+            flex: 1;
+            background: white;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .viewport-content {
+            flex: 1;
+            position: relative;
+            background: #f0f0f0;
+            overflow: hidden;
+        }
+        
+        .browser-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+        
+        .steel-browser-iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: none; /* Hidden by default */
+        }
+        
+        .no-browser-message {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            color: #666;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: #f0f0f0; /* Match viewport background */
+            z-index: 10;
+        }
+        
+        .no-browser-message h3 {
+            margin-bottom: 16px;
+            color: #333;
+        }
+        
+        .viewport-overlay {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            display: none; /* Hidden by default */
+            flex-direction: column;
+            gap: 8px;
+            z-index: 1000;
+            pointer-events: none;
+        }
+        
+        .viewport-overlay > * {
+            pointer-events: auto;
+        }
+        
+        .live-indicator {
+            background: #dc3545;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            animation: pulse 2s infinite;
+            text-align: center;
+        }
+        
+        .viewport-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        
+        .viewport-btn {
+            padding: 6px 12px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        
+        .viewport-btn:hover {
+            background: rgba(0, 0, 0, 0.9);
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Left Panel -->
+        <div class="left-panel">
+            <div class="header">
+                <h1>Test Recording</h1>
+                <div class="controls">
+                    <button class="btn primary" id="startRecordingBtn">Start Recording</button>
+                    <button class="btn" id="stopRecordingBtn" disabled>Stop</button>
+                </div>
+                <div class="status">
+                    <span class="status-item">
+                        <div id="connectionStatusDot" class="status-dot disconnected"></div>
+                        <span id="connectionStatusText">Disconnected</span>
+                    </span>
+                    <span class="status-item">
+                        <div id="recordingStatusDot" class="status-dot"></div>
+                        <span id="recordingStatusText">Not Recording</span>
+                    </span>
+                </div>
+            </div>
+
+            <div class="tabs">
+                <button class="tab-button active" data-tab="steps">Steps</button>
+                <button class="tab-button" data-tab="chat">Chat</button>
+            </div>
+
+            <!-- Steps Tab -->
+            <div id="stepsTab" class="tab-content active">
+                <div class="steps-toolbar">
+                    <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+                        <input type="checkbox" id="selectAllStepsCheckbox" />
+                        <span>Select All</span>
+                    </label>
+                    <button class="btn" id="exportStepsBtn" title="Export steps to JSON (selected or all if none selected)">Export JSON</button>
+                </div>
+                <div class="steps-container" id="stepsContainer">
+                    <div class="empty-state" id="stepsEmptyState">
+                        <h3>No Steps Recorded</h3>
+                        <p>Start recording to see steps here.</p>
+                    </div>
+                    <!-- Steps will be dynamically added here -->
+                </div>
+            </div>
+
+            <!-- Chat Tab -->
+            <div id="chatTab" class="tab-content">
+                <div class="chat-container">
+                    <div class="chat-messages" id="chatMessages">
+                        <div class="empty-state">
+                            <h3>Chat with Assistant</h3>
+                            <p>Ask questions or give instructions.</p>
+                        </div>
+                    </div>
+                    <div class="chat-input-container">
+                        <div class="chat-input-group">
+                            <input type="text" id="chatInput" class="chat-input" placeholder="Type your message...">
+                            <button id="chatSendBtn" class="chat-send-btn">Send</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Panel - Browser -->
+        <div class="right-panel" id="rightPanel">
+            <div class="viewport-content" id="viewportContent">
+                <div class="browser-container" id="browserContainer">
+                    <!-- Live Steel Browser Iframe -->
+                    <iframe 
+                        id="steelBrowserFrame" 
+                        src="about:blank" 
+                        sandbox="allow-same-origin allow-scripts allow-forms allow-popups" 
+                        class="steel-browser-iframe" 
+                        allow="clipboard-read; clipboard-write"
+                        onload="console.log('Steel Browser iframe loaded')"
+                        onerror="recorder.handleIframeError()">
+                    </iframe>
+                    <!-- Fallback when browser not connected -->
+                    <div class="no-browser-message" id="noBrowserMessage">
+                        <h3>Browser Not Connected</h3>
+                        <p>Start recording to launch browser session</p>
+                        <p><small>Steel Browser should be running at <a href="http://localhost:3000" target="_blank">localhost:3000</a></small></p>
+                        <p><small>Make sure Steel Browser Docker container is running</small></p>
+                    </div>
+                    <!-- Control overlay -->
+                    <div class="viewport-overlay" id="viewportOverlay">
+                        <div class="live-indicator">LIVE</div>
+                        <div class="viewport-controls">
+                            <button class="viewport-btn" id="refreshBrowserBtn" title="Refresh Browser">🔄</button>
+                            <button class="viewport-btn" id="fullscreenBtn" title="Fullscreen">⛶</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class RecorderUI {
+            constructor() {
+                this.ws = null;
+                this.currentSession = null;
+                this.isRecording = false;
+                this.steps = [];
+                this.selectedSteps = new Set();
+                this.chatHistory = [];
+                this.activeTab = 'steps';
+                
+                this.initializeElements();
+                this.bindEvents();
+                this.connectWebSocket();
+                this.loadSteps();
+                this.loadChatMessages();
+            }
+            
+            initializeElements() {
+                // Main controls
+                this.startRecordingBtn = document.getElementById('startRecordingBtn');
+                this.stopRecordingBtn = document.getElementById('stopRecordingBtn');
+
+                // Status indicators
+                this.connectionStatusDot = document.getElementById('connectionStatusDot');
+                this.connectionStatusText = document.getElementById('connectionStatusText');
+                this.recordingStatusDot = document.getElementById('recordingStatusDot');
+                this.recordingStatusText = document.getElementById('recordingStatusText');
+
+                // Steps
+                this.stepsContainer = document.getElementById('stepsContainer');
+                this.stepsEmptyState = document.getElementById('stepsEmptyState');
+                this.selectAllCheckbox = document.getElementById('selectAllStepsCheckbox');
+                this.exportStepsBtn = document.getElementById('exportStepsBtn');
+
+                // Chat
+                this.chatMessages = document.getElementById('chatMessages');
+                this.chatInput = document.getElementById('chatInput');
+                this.chatSendBtn = document.getElementById('chatSendBtn');
+
+                // Tabs
+                this.tabButtons = document.querySelectorAll('.tab-button');
+                this.tabContents = document.querySelectorAll('.tab-content');
+
+                // Right Panel / Viewport
+                this.steelBrowserFrame = document.getElementById('steelBrowserFrame');
+                this.noBrowserMessage = document.getElementById('noBrowserMessage');
+                this.viewportOverlay = document.getElementById('viewportOverlay');
+                this.refreshBrowserBtn = document.getElementById('refreshBrowserBtn');
+                this.fullscreenBtn = document.getElementById('fullscreenBtn');
+                this.browserContainer = document.getElementById('browserContainer');
+            }
+            
+            bindEvents() {
+                this.startRecordingBtn.addEventListener('click', () => this.startRecording());
+                this.stopRecordingBtn.addEventListener('click', () => this.stopRecording());
+                
+                this.refreshBrowserBtn.addEventListener('click', () => this.refreshBrowser());
+                this.fullscreenBtn.addEventListener('click', () => this.toggleFullscreen());
+
+                this.chatSendBtn.addEventListener('click', () => this.sendChatMessage());
+                this.chatInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') this.sendChatMessage();
+                });
+                
+                this.tabButtons.forEach(button => {
+                    button.addEventListener('click', () => {
+                        this.switchTab(button.getAttribute('data-tab'));
+                    });
+                });
+                if (this.selectAllCheckbox) {
+                    this.selectAllCheckbox.addEventListener('change', (e) => this.handleSelectAll(e.target.checked));
+                }
+                if (this.exportStepsBtn) {
+                    this.exportStepsBtn.addEventListener('click', () => this.exportSteps());
+                }
+            }
+            
+            connectWebSocket() {
+                const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+                const wsUrl = `${protocol}//${window.location.host}/ws`;
+                
+                this.ws = new WebSocket(wsUrl);
+                
+                this.ws.onopen = () => {
+                    console.log('WebSocket connected');
+                    this.updateConnectionStatus(true);
+                };
+                
+                this.ws.onmessage = (event) => {
+                    const message = JSON.parse(event.data);
+                    this.handleWebSocketMessage(message);
+                };
+                
+                this.ws.onerror = (error) => {
+                    console.error('WebSocket error:', error);
+                    this.updateConnectionStatus(false);
+                };
+                
+                this.ws.onclose = () => {
+                    console.log('WebSocket disconnected');
+                    this.updateConnectionStatus(false);
+                    setTimeout(() => this.connectWebSocket(), 3000);
+                };
+            }
+            
+            handleWebSocketMessage(message) {
+                console.log('WS Message:', message);
+                switch (message.type) {
+                    case 'session_created':
+                        this.currentSession = message.browser_id;
+                        this.showBrowserConnected(message.current_url);
+                        break;
+                    case 'navigation_complete':
+                        // URL bar removed - Steel Browser handles navigation
+                        break;
+                    case 'step_recorded':
+                        console.log('Step recorded:', message.step);
+                        this.addStep(message.step);
+                        break;
+                    case 'step_updated':
+                        console.log('Step updated:', message.step);
+                        this.updateStep(message.index, message.step);
+                        break;
+                    case 'recording_started':
+                        this.onRecordingStarted();
+                        break;
+                    case 'recording_stopped':
+                        this.onRecordingStopped();
+                        break;
+                    case 'steps_cleared':
+                        this.steps = [];
+                        this.selectedSteps.clear();
+                        this.renderSteps();
+                        break;
+                    case 'chat_message':
+                        this.addChatMessage(message.message);
+                        break;
+                    case 'error':
+                        alert(`Error: ${message.message}`);
+                        break;
+                }
+            }
+            
+            switchTab(tabName) {
+                this.activeTab = tabName;
+                this.tabButtons.forEach(b => b.classList.toggle('active', b.dataset.tab === tabName));
+                this.tabContents.forEach(c => c.classList.toggle('active', c.id === `${tabName}Tab`));
+            }
+            
+            async loadSteps() {
+                try {
+                    const response = await fetch('/api/steps');
+                    const data = await response.json();
+                    if (data.status === 'success') {
+                        this.steps = data.steps || [];
+                        this.renderSteps();
+                    }
+                } catch (error) {
+                    console.error('Failed to load steps:', error);
+                }
+            }
+
+            async loadChatMessages() {
+                try {
+                    const response = await fetch('/api/chat/messages');
+                    const data = await response.json();
+                    if (data.status === 'success') {
+                        this.chatHistory = data.messages || [];
+                        this.renderChatMessages();
+                    }
+                } catch (error) {
+                    console.error('Failed to load chat messages:', error);
+                }
+            }
+            
+            async sendChatMessage() {
+                const message = this.chatInput.value.trim();
+                if (!message) return;
+                
+                this.chatInput.value = '';
+                this.chatInput.disabled = true;
+                this.chatSendBtn.disabled = true;
+                
+                try {
+                    await fetch('/api/chat/send', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ message })
+                    });
+                } catch (error) {
+                    console.error('Failed to send chat message:', error);
+                    alert(`Failed to send message: ${error.message}`);
+                } finally {
+                    this.chatInput.disabled = false;
+                    this.chatSendBtn.disabled = false;
+                    this.chatInput.focus();
+                }
+            }
+
+            addChatMessage(message) {
+                this.chatHistory.push(message);
+                this.renderChatMessages();
+            }
+            
+            renderChatMessages() {
+                if (this.chatHistory.length === 0) {
+                    this.chatMessages.innerHTML = `<div class="empty-state"><h3>Chat with Assistant</h3><p>Ask questions or give instructions.</p></div>`;
+                    return;
+                }
+                this.chatMessages.innerHTML = this.chatHistory.map(msg => `
+                    <div class="chat-message ${msg.role}">
+                        <div class="message-bubble">${msg.content}</div>
+                        <div class="message-timestamp">${new Date(msg.timestamp * 1000).toLocaleTimeString()}</div>
+                    </div>
+                `).join('');
+                this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
+            }
+            
+            async startRecording() {
+                try {
+                    this.startRecordingBtn.disabled = true;
+                    this.startRecordingBtn.textContent = 'Connecting...';
+                    
+                    // First create/connect browser session
+                    const sessionResponse = await fetch('/api/sessions/create', { method: 'POST' });
+                    const sessionData = await sessionResponse.json();
+                    
+                    if (sessionData.status !== 'success') {
+                        throw new Error(sessionData.message || 'Failed to create session');
+                    }
+                    
+                    this.currentSession = sessionData.browser_id;
+                    this.showBrowserConnected(sessionData.current_url);
+                    
+                    // Now start recording with element highlighting
+                    const recordResponse = await fetch('/api/recording/start', { method: 'POST' });
+                    const recordData = await recordResponse.json();
+                    
+                    if (recordData.status === 'success') {
+                        this.onRecordingStarted();
+                        this.steps = [];
+                        this.selectedSteps.clear();
+                        this.renderSteps();
+                    } else {
+                        throw new Error(recordData.message || 'Failed to start recording');
+                    }
+                } catch (error) {
+                    console.error('Failed to start recording:', error);
+                    this.startRecordingBtn.disabled = false;
+                    this.startRecordingBtn.textContent = 'Start Recording';
+                    alert(`Failed to start recording: ${error.message}`);
+                }
+            }
+            
+            async stopRecording() {
+                try {
+                    await fetch('/api/recording/stop', { method: 'POST' });
+                    await fetch('/api/sessions/stop', { method: 'POST' });
+                    this.onRecordingStopped();
+                } catch (error) {
+                    console.error('Failed to stop recording:', error);
+                }
+            }
+
+            onRecordingStarted() {
+                this.isRecording = true;
+                this.updateRecordingStatus(true);
+                this.startRecordingBtn.textContent = 'Recording...';
+                this.startRecordingBtn.disabled = true;
+                this.stopRecordingBtn.disabled = false;
+            }
+
+            onRecordingStopped() {
+                this.isRecording = false;
+                this.updateRecordingStatus(false);
+                this.startRecordingBtn.textContent = 'Start Recording';
+                this.startRecordingBtn.disabled = false;
+                this.stopRecordingBtn.disabled = true;
+            }
+            
+            addStep(step) {
+                console.log('Adding step to UI:', step);
+                this.steps.push(step);
+                this.renderSteps();
+            }
+
+            updateStep(index, step) {
+                console.log('Updating step in UI:', index, step);
+                if (index >= 0 && index < this.steps.length) {
+                    this.steps[index] = step;
+                    this.renderSteps();
+                }
+            }
+            
+            renderSteps() {
+                if (this.steps.length === 0) {
+                    this.stepsContainer.innerHTML = `<div class="empty-state" id="stepsEmptyState"><h3>No Steps Recorded</h3><p>Start recording to see steps here.</p></div>`;
+                    this.updateMasterCheckbox && this.updateMasterCheckbox();
+                    return;
+                }
+                
+                this.stepsContainer.innerHTML = this.steps.map((step, index) => {
+                    const isSelected = this.selectedSteps.has(index);
+                    const thumbnailHtml = step.screenshot ? 
+                        `<img src="${step.screenshot}" alt="Step screenshot">` : 
+                        `<div style="display: flex; align-items: center; justify-content: center; height: 100%; background: #f0f0f0; color: #666; font-size: 12px;">${this.getStepIcon(step)}</div>`;
+                    
+                    return `
+                        <div class="step-item ${isSelected ? 'selected' : ''}" data-index="${index}">
+                            <div class="step-thumbnail">${thumbnailHtml}</div>
+                            <div class="step-content">
+                                <div class="step-title">${this.getStepTitle(step)}</div>
+                                <div class="step-details">${step.tool ? 'Tool: ' + step.tool : this.getStepDetails(step)}</div>
+                                <div class="step-timestamp">${new Date(step.timestamp * 1000).toLocaleTimeString()}</div>
+                            </div>
+                            <input type="checkbox" class="step-checkbox" ${isSelected ? 'checked' : ''} onchange="recorder.toggleStepSelection(${index}, this.checked)">
+                        </div>
+                    `;
+                }).join('');
+                
+                this.stepsContainer.querySelectorAll('.step-item').forEach((item, index) => {
+                    item.addEventListener('click', (e) => {
+                        if (e.target.type !== 'checkbox') {
+                            const checkbox = item.querySelector('input[type="checkbox"]');
+                            checkbox.checked = !checkbox.checked;
+                            this.toggleStepSelection(index, checkbox.checked);
+                        }
+                    });
+                });
+                this.updateMasterCheckbox && this.updateMasterCheckbox();
+            }
+
+            getStepIcon(step) {
+                switch (step.action_type) {
+                    case 'click': return '👆';
+                    case 'type': return '⌨️';
+                    case 'navigate': return '🌐';
+                    case 'scroll': return '📜';
+                    default: return '⚡';
+                }
+            }
+            
+            getStepTitle(step) {
+                const tool = step.tool || step.action_type;
+                const action = step.action || '';
+                
+                if (tool === 'click_element_by_index') {
+                    const elementText = step.parameters?.element_text || step.element_text || '';
+                    return `Click ${elementText || step.element_tag || 'element'}`;
+                }
+                if (tool === 'input_text') {
+                    const text = step.parameters?.text || step.text || '';
+                    return text ? `Type "${text.slice(0,50)}"` : 'Type text';
+                }
+                if (tool === 'go_to_url') {
+                    return 'Navigate to URL';
+                }
+                if (tool === 'scroll') {
+                    return 'Scroll page';
+                }
+                
+                return action || tool || 'Action';
+            }
+            
+            getStepDetails(step) {
+                const details = [];
+                if (step.tag) details.push(`Tag: ${step.tag}`);
+                if (step.text) details.push(`Text: ${step.text}`);
+                if (step.input_value) details.push(`Value: ${step.input_value}`);
+                if (step.locators && step.locators.length > 0) {
+                    const selector = step.locators[0].selector;
+                    if (selector) details.push(`Selector: ${selector}`);
+                }
+                if (step.details?.url || step.url) details.push(`URL: ${step.details?.url || step.url}`);
+                return details.join(' • ') || 'No additional details';
+            }
+            
+            toggleStepSelection(index, selected) {
+                if (selected) this.selectedSteps.add(index);
+                else this.selectedSteps.delete(index);
+                this.updateMasterCheckbox && this.updateMasterCheckbox();
+                this.renderSteps();
+            }
+            handleSelectAll(checked) {
+                if (checked) {
+                    this.selectedSteps = new Set(this.steps.map((_, i) => i));
+                } else {
+                    this.selectedSteps.clear();
+                }
+                this.updateMasterCheckbox();
+                this.renderSteps();
+            }
+            updateMasterCheckbox() {
+                if (!this.selectAllCheckbox) return;
+                const total = this.steps.length;
+                const selected = this.selectedSteps.size;
+                if (total === 0) {
+                    this.selectAllCheckbox.checked = false;
+                    this.selectAllCheckbox.indeterminate = false;
+                    return;
+                }
+                this.selectAllCheckbox.checked = selected === total;
+                this.selectAllCheckbox.indeterminate = selected > 0 && selected < total;
+            }
+            exportSteps() {
+                try {
+                    const exportList = this.selectedSteps.size > 0 ? Array.from(this.selectedSteps).sort((a,b)=>a-b).map(i => this.steps[i]) : this.steps;
+                    const json = JSON.stringify(exportList, null, 2);
+                    const w = window.open('', '_blank');
+                    if (!w) { alert('Pop-up blocked. Allow pop-ups to view exported steps.'); return; }
+                    w.document.write('<!DOCTYPE html><html><head><title>Exported Steps JSON</title><meta charset="utf-8"/><style>body{margin:0;font-family:monospace;background:#1e1e1e;color:#dcdcdc;}pre{white-space:pre-wrap;word-break:break-word;padding:16px;}button{position:fixed;top:8px;right:8px;padding:4px 8px;}</style></head><body><button onclick="navigator.clipboard.writeText(document.getElementById(\'json\').textContent).then(()=>{this.textContent=\'Copied!\'; setTimeout(()=>this.textContent=\'Copy JSON\',1500);})">Copy JSON</button><pre id=\"json\"></pre></body></html>');
+                    w.document.close();
+                    w.document.getElementById('json').textContent = json;
+                } catch (e) {
+                    console.error('Failed to export steps', e);
+                    alert('Failed to export steps: ' + e.message);
+                }
+            }
+            
+            updateConnectionStatus(connected) {
+                this.connectionStatusDot.className = `status-dot ${connected ? 'connected' : 'disconnected'}`;
+                this.connectionStatusText.textContent = connected ? 'Connected' : 'Disconnected';
+            }
+            
+            updateRecordingStatus(recording) {
+                this.recordingStatusDot.className = `status-dot ${recording ? 'recording' : ''}`;
+                this.recordingStatusText.textContent = recording ? 'Recording' : 'Not Recording';
+            }
+            
+            showBrowserConnected(currentUrl) {
+                this.noBrowserMessage.style.display = 'none';
+                this.steelBrowserFrame.style.display = 'block';
+                this.viewportOverlay.style.display = 'flex';
+                
+                // Set src after a short delay to ensure the element is visible in the DOM
+                setTimeout(() => {
+                    this.steelBrowserFrame.src = 'http://localhost:3000/v1/sessions/debug?clipboardBridge=true';
+                }, 100);
+            }
+            
+            handleIframeError() {
+                console.error('Steel Browser iframe failed to load.');
+                this.noBrowserMessage.style.display = 'flex';
+                this.steelBrowserFrame.style.display = 'none';
+                this.viewportOverlay.style.display = 'none';
+                this.noBrowserMessage.innerHTML = `
+                    <h3>⚠️ Steel Browser Connection Failed</h3>
+                    <p>Could not connect to Steel Browser at localhost:3000</p>
+                    <p><strong>Please make sure the Docker container is running.</strong></p>
+                    <p><a href="http://localhost:3000" target="_blank" class="btn primary">Test Connection</a></p>
+                `;
+            }
+            
+            toggleFullscreen() {
+                if (!document.fullscreenElement) {
+                    this.browserContainer.requestFullscreen().catch(err => console.log(err));
+                } else {
+                    document.exitFullscreen();
+                }
+            }
+            
+            refreshBrowser() {
+                if (this.steelBrowserFrame.style.display === 'block') {
+                    const currentSrc = this.steelBrowserFrame.src;
+                    this.steelBrowserFrame.src = 'about:blank';
+                    setTimeout(() => { this.steelBrowserFrame.src = currentSrc; }, 100);
+                }
+            }
+        }
+        
+        const recorder = new RecorderUI();
+    </script>
+</body>
+</html>
