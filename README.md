@@ -1,5 +1,28 @@
 # Project: **Browser-use Assisted Flow Recorder**
 
+## 🎥 Demo & Launch Tweet
+
+[Tweet announcement / context](https://x.com/ShivamKhatri_/status/1965906282675843116)
+
+<div align="center">
+    <video width="800" controls title="Flow Recorder Demo">
+        <source src="./demo.mp4" type="video/mp4" />
+        Your viewer doesn't support embedded video. Open the clip here: <a href="./demo.mp4">demo.mp4</a>
+    </video>
+  
+    <p>
+        If the player doesn't render in your viewer, <a href="./demo.mp4">download / open the demo video</a>.
+    </p>
+</div>
+
+Key moments in the clip:
+1. Start recording & navigation
+2. Manual + agent steps captured side-by-side
+3. Grouping steps into a module
+4. Exporting to Python & Cypress code
+
+---
+
 ### Problem Statement
 
 Browser-use is a promising framework for AI-driven automation, but based on my extensive usage for QA automation, I’ve observed several challenges:
@@ -47,19 +70,6 @@ This bridges the gap between **human precision** and **AI-driven automation**.
 👉 This way, the project demonstrates both **a real-world QA testing problem** and **a practical hybrid solution**.
 
 ---
-
-
-## 🎥 Demo
-
-<video src="demo.mp4" controls width="800" title="Flow Recorder Demo"></video>
-
-If the video doesn't render on your viewer, [download / open the demo video](./demo.mp4).
-
-Key moments:
-1. Start recording and navigate
-2. Manual + agent steps captured
-3. Module grouping
-4. Export to Python / Cypress
 
 
 An interaction recorder and test automation tool built on top of browser-use.
