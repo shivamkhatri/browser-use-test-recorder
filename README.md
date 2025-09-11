@@ -15,13 +15,16 @@
     </p>
 </div>
 
-Key moments in the clip:
-1. Start recording & navigation
-2. Manual + agent steps captured side-by-side
-3. Grouping steps into a module
-4. Exporting to Python & Cypress code
-
 ---
+
+The long-term vision is to integrate this tool into workflow-use and QA-use, delivering a best-in-class test authoring platform that enables high-quality no-code and low-code automation.
+
+<img width="1858" height="737" alt="image" src="https://github.com/user-attachments/assets/cb96bad4-4b79-4ada-b476-624a403c6c94" />
+
+<img width="1270" height="746" alt="image" src="https://github.com/user-attachments/assets/9c60ea85-61be-4705-9a10-fab47fcbc8b0" />
+
+
+Future plan: https://g.co/gemini/share/8859e4072909
 
 ### Problem Statement
 
