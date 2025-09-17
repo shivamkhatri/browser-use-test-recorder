@@ -1,4 +1,4 @@
-# Project: **FlowForge - A hybrid recorder to supercharge browser-use for Contextual AI Actions and QA.**
+# FlowForge - A hybrid recorder to supercharge browser-use for Contextual AI Actions and QA.
 ---
 
 ### Contextual AI Actions
