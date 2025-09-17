@@ -1,81 +1,44 @@
-# Project: **Browser-use Assisted Flow Recorder**
+# Project: **FlowForge - A hybrid recorder to supercharge browser-use for Contextual AI Actions and QA.**
+---
 
-## 🎥 Demo & Launch Tweet
+### Contextual AI Actions
 
-[Tweet announcement / context](https://x.com/ShivamKhatri_/status/1965906282675843116)
+<img width="1024" height="490" alt="Image" src="https://github.com/user-attachments/assets/65ba44fd-0e0c-44fb-a109-1152643b7d6b" />
 
-<div align="center">
-    <video width="800" controls title="Flow Recorder Demo">
-        <source src="./demo.mp4" type="video/mp4" />
-        Your viewer doesn't support embedded video. Open the clip here: <a href="./demo.mp4">demo.mp4</a>
-    </video>
-  
-    <p>
-        If the player doesn't render in your viewer, <a href="./demo.mp4">download / open the demo video</a>.
-    </p>
-</div>
+https://github.com/user-attachments/assets/b87a322e-b7c2-4d63-8248-fe1c2d22aad8
 
 ---
 
-The long-term vision is to integrate this tool into workflow-use and QA-use, delivering a best-in-class test authoring platform that enables high-quality no-code and low-code automation.
+## What does it do?
 
-<img width="1858" height="737" alt="image" src="https://github.com/user-attachments/assets/cb96bad4-4b79-4ada-b476-624a403c6c94" />
+AI copilots today are **stateless**—they only respond prompt-by-prompt, without understanding the larger workflow. This forces users to repeatedly re-explain context instead of letting AI learn from the full journey.
 
-<img width="1270" height="746" alt="image" src="https://github.com/user-attachments/assets/9c60ea85-61be-4705-9a10-fab47fcbc8b0" />
+## Problem
 
+* Current copilots can’t **observe user actions** across steps.
+* They react only to a single screen, not the end-to-end process.
+* As a result, they can’t recommend meaningful, high-level automations.
 
-Future plan: https://g.co/gemini/share/8859e4072909
+## Solution: Hybrid Flow Recorder
 
-### Problem Statement
+A **Flow Recorder** that captures both:
 
-Browser-use is a promising framework for AI-driven automation, but based on my extensive usage for QA automation, I’ve observed several challenges:
+1. **Manual actions** by the user
+2. **AI agent-driven actions**
 
-* **Instruction following issues:** LLMs like GPT-4.1 often skip essential actions in multi-step tests.
-* **Model tradeoffs:** Claude 4 Sonnet handles instruction following better, but it’s slow and expensive (\~\$2.50 for a 25-step test).
-* **Wrong element interactions:** If browser-use acts on the wrong element, subsequent steps still continue instead of failing early.
-* **Custom UI elements:** Many enterprise apps use in-house icons unfamiliar to LLMs. Agents misidentify them, especially when elements lack useful attributes.
-* **No relative selectors:** Unlike Cypress/Selenium, identifying elements relative to nearby elements is hard with browser-use.
-* **Debugging difficulty:** Without step-by-step execution during test creation, users write long tasks (20–30 steps) only to discover failures deep inside, wasting time in debugging.
+This creates a unified sequential log, which a **Contextual AI engine** uses to recommend relevant next steps. Once approved, the browser-use agent executes them.
 
----
+## Examples
 
-### My Idea
+* **Context-aware recommendation**: While copying tasks into a calendar, AI suggests: *“Create calendar events automatically?”*
+* **Proactive completion**: While browsing apartments, AI offers: *“Compare top 3 apartments”* or *“Schedule a viewing.”*
 
-I propose a **Flow Recorder** that combines **manual recording** (like workflow-use) with **browser-use agent interactions**, solving the above pain points.
+## For QA & Automation
 
-* Users can **record manual interactions** and **agent-driven steps** side by side.
-* The **steps export as JSON**, which can:
+* Flows export as JSON → generate Cypress/Playwright/Selenium tests.
+* Reuse flows as manual/agent actions in **browser-use**.
+* Integrates into **workflow-use** and **QA-use** for a best-in-class no-code/low-code automation platform.
 
-  * Feed into Cursor/VSCode for generating robust test automation code (Cypress, Selenium, Playwright).
-  * Be reused as **initial/final/manual actions** for browser-use.
-
-This bridges the gap between **human precision** and **AI-driven automation**.
-
----
-
-### Why This Matters
-
-* **Practicality:** QA engineers are already used to manual recorders (LambdaTest, KaneAI, etc.), validating this idea.
-* **Flexibility:** Manual + Agent interaction recording reduces reliance on LLM correctness alone.
-* **Debuggability:** Step-by-step creation and export make tests easier to validate and maintain.
-* **Adoption:** Enterprises can gradually adopt browser-use by combining familiar workflows with AI assistance.
-
----
-
-### Future Work
-
-* Integrate visual assertions so execution halts if an unexpected element interaction occurs.
-* Add relative element selection support.
-* Optimize cost by minimizing redundant LLM calls.
-
----
-
-👉 This way, the project demonstrates both **a real-world QA testing problem** and **a practical hybrid solution**.
-
----
-
-
-An interaction recorder and test automation tool built on top of browser-use.
 
 ## 🎯 Features
 
